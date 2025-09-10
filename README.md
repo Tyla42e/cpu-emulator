@@ -1,59 +1,83 @@
 # CPU Emulator
 
-This project is a CPU emulator that supports the emulation of three different CPU architectures: 6502, 6510, and Z80. Each CPU emulator is implemented in its own package, allowing for modular development and easy maintenance.
+A modular emulator framework for classic CPUs, supporting the strategy pattern and extensible instruction sets.
 
 ## Project Structure
 
 ```
-cpu-emulator
-├── cmd
-│   └── main.go          # Entry point of the application
-├── pkg
-│   ├── cpu6502
-│   │   └── cpu6502.go   # Implementation of the 6502 CPU emulator
-│   ├── cpu6510
-│   │   └── cpu6510.go   # Implementation of the 6510 CPU emulator
-│   └── cpuZ80
-│       └── cpuZ80.go    # Implementation of the Z80 CPU emulator
-├── go.mod                # Module definition for the Go project
-└── README.md             # Documentation for the project
+cpu-emulator/
+├── pkg/
+│   ├── cpu/           # Common CPU interface and instruction definitions
+│   │   └── instruction.go
+│   ├── cpu6502/       # MOS 6502 CPU implementation and instructions
+│   │   ├── cpu6502.go
+│   │   ├── instructions.go
+│   │   └── cpu6502_test.go
+│   ├── cpu6510/       # MOS 6510 CPU implementation and instructions
+│   │   ├── cpu6510.go
+│   │   └── instructions.go
+│   ├── cpu65c02/      # WDC 65C02 CPU implementation and instructions
+│   │   ├── cpu65c02.go
+│   │   └── instructions.go
+│   ├── cpuz80/        # Zilog Z80 CPU implementation and instructions
+│   │   ├── cpuz80.go
+│   │   └── instructions.go
+│   ├── cpu68000/      # Motorola 68000 CPU implementation and instructions
+│   │   ├── cpu68000.go
+│   │   └── instructions.go
+│   └── memory/        # Memory abstraction
+│       └── memory.go
+└── main.go            # Example entry point
 ```
 
-## Getting Started
+## Features
 
-To build and run the CPU emulator, follow these steps:
+- **Strategy Pattern:** Swap CPU implementations at runtime via a common interface.
+- **Extensible Instruction Sets:** Each CPU has its own instruction array, easily extended or overridden.
+- **Modular Design:** Add new CPUs by creating a new package and implementing the interface.
+- **Unit Tests:** Example tests included for instruction correctness.
+- **Memory Abstraction:** Easily configure memory size and behavior.
 
-1. **Clone the repository:**
-   ```
-   git clone <repository-url>
-   cd cpu-emulator
-   ```
+## Adding a New CPU
 
-2. **Install dependencies:**
-   ```
-   go mod tidy
-   ```
+1. Create a new package in `pkg/` (e.g., `cpu8080`).
+2. Implement the `cpu.CPU` interface.
+3. Define an instruction set array for the new CPU.
+4. Add addressing mode helpers and flag helpers as needed.
 
-3. **Run the emulator:**
-   ```
-   go run cmd/main.go
-   ```
+## Example Usage
 
-## CPU Architectures
+```go
+import (
+    "emulator/pkg/cpu6502"
+)
 
-### 6502
-The 6502 CPU emulator is implemented in the `pkg/cpu6502` package. It provides methods to reset the CPU, execute a single instruction (step), and load a program into memory.
+func main() {
+    cpu := cpu6502.New(65536)
+    program := []uint8{0xA9, 0x42, 0xAA, 0x00} // LDA #$42; TAX; BRK
+    cpu.LoadProgram(program, 0x8000)
+    cpu.(*cpu6502.CPU6502).Memory.Write(0xFFFC, 0x00)
+    cpu.(*cpu6502.CPU6502).Memory.Write(0xFFFD, 0x80)
+    cpu.Reset()
+    for i := 0; i < 3; i++ {
+        cpu.Step()
+    }
+}
+```
 
-### 6510
-The 6510 CPU emulator is implemented in the `pkg/cpu6510` package. Similar to the 6502, it includes methods for resetting the CPU, stepping through instructions, and loading programs.
+## Testing
 
-### Z80
-The Z80 CPU emulator is implemented in the `pkg/cpuZ80` package. It features methods for resetting the CPU, executing instructions, and loading programs specific to the Z80 architecture.
+Run all tests with:
+
+```sh
+go test ./pkg/...
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
+- Fork and submit pull requests for new CPUs or improvements.
+- Please include tests for new instructions or features.
 
-## License
+---
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+**This project is a
