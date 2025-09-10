@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cpu-emulator/pkg/cpu6502"
+	cpu6502 "cpu-emulator/pkg/6502"
 )
 
 func main() {
